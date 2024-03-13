@@ -1,0 +1,20 @@
+[
+  {
+    "id": 1,
+    "enunciado": "Qual é a capital do Brasil?",
+    "resposta": "Brasília",
+    "outras_alternativas": ["São Paulo", "Rio de Janeiro", "Salvador"],
+    "materia": "Geografia"
+  },
+  {
+    "id": 2,
+    "enunciado": "Quem descobriu o Brasil?",
+    "resposta": "Pedro Álvares Cabral",
+    "outras_alternativas": [
+      "Cristóvão Colombo",
+      "Amerigo Vespucci",
+      "Fernão de Magalhães"
+    ],
+    "materia": "História"
+  }
+]
