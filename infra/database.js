@@ -8,7 +8,6 @@ async function query(queryObject) {
     database: process.env.POSTGRES_DB,
     password: process.env.POSTGRES_PASSWORD,
     ssl: false,
-    // ssl: getSSLValues(),
   });
 
   try {
