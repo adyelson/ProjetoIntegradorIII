@@ -1,47 +1,86 @@
-import { Pool } from "pg";
+import { useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/router"; // Importando o hook useRouter para acessar o roteador
 
-const pool = new Pool({
-  host: process.env.POSTGRES_HOST,
-  port: process.env.POSTGRES_PORT,
-  user: process.env.POSTGRES_USER,
-  database: process.env.POSTGRES_DB,
-  password: process.env.POSTGRES_PASSWORD,
-  ssl: getSSLValues(),
-});
-function getSSLValues() {
-  if (process.env.POSTGRES_CA) {
-    return {
-      ca: process.env.POSTGRES_CA,
-    };
-  }
+export default function Home() {
+  const [questionCount, setQuestionCount] = useState(10);
+  const [selectedSubjects, setSelectedSubjects] = useState([]);
+  const subjects = [
+    "Matemática",
+    "Português",
+    "Ciências",
+    "História",
+    "Geografia",
+  ];
 
-  return process.env.NODE_ENV === "development" ? false : true;
-}
-async function fetchFromDatabase() {
-  const res = await pool.query("SELECT * FROM perguntas");
-  return res.rows;
-}
+  const router = useRouter(); // Obtendo o objeto de roteamento
 
-// export default function MinhaPagina({ dados }) {
-//   // Renderize seus dados aqui
-//   return <div>{JSON.stringify(dados)}</div>;
-// }
-export default function MinhaPagina({ dados }) {
+  const handleSubjectChange = (subject) => {
+    if (selectedSubjects.includes(subject)) {
+      setSelectedSubjects(selectedSubjects.filter((item) => item !== subject));
+    } else {
+      setSelectedSubjects([...selectedSubjects, subject]);
+    }
+  };
+
+  const handleQuestionCountChange = (e) => {
+    setQuestionCount(parseInt(e.target.value, 10));
+  };
+
+  const handleSubmit = () => {
+    // Aqui você pode enviar os dados para a rota /questionario/index.js
+    console.log("Matérias selecionadas:", selectedSubjects);
+    console.log("Quantidade de questões:", questionCount);
+    // Implemente o envio real dos dados aqui
+
+    // Navegando para a rota /questionario e passando os dados como query params
+    router.push({
+      pathname: "/questionario",
+      query: {
+        subjects: selectedSubjects.join(","), // Convertendo o array de matérias em uma string separada por vírgula
+        questionCount: questionCount.toString(), // Convertendo a quantidade de questões para string
+      },
+    });
+  };
+
   return (
     <div>
-      {dados.map((questao) => (
-        <div key={questao.id}>
-          <h2>{questao.enunciado}</h2>
-          <p>Resposta correta: {questao.resposta}</p>
-          <p>Outras alternativas: {questao.outras_alternativas.join(", ")}</p>
-          <p>Matéria: {questao.materia}</p>
+      <h1>Selecione as Matérias e a Quantidade de Questões</h1>
+      <div>
+        <h2>Escolha suas matérias:</h2>
+        {subjects.map((subject) => (
+          <label key={subject}>
+            <input
+              type="checkbox"
+              checked={selectedSubjects.includes(subject)}
+              onChange={() => handleSubjectChange(subject)}
+            />
+            {subject}
+          </label>
+        ))}
+        <div>
+          <h3>Matérias selecionadas:</h3>
+          <ul>
+            {selectedSubjects.map((subject) => (
+              <li key={subject}>{subject}</li>
+            ))}
+          </ul>
         </div>
-      ))}
+      </div>
+      <div>
+        <label>
+          Quantidade de Questões:
+          <input
+            type="number"
+            value={questionCount}
+            onChange={handleQuestionCountChange}
+          />
+        </label>
+      </div>
+      <button onClick={handleSubmit}>Iniciar Prova</button>
+      <p>
+        <Link href="/questionario">Ir para o Questionário</Link>
+      </p>
     </div>
   );
-}
-
-export async function getServerSideProps() {
-  const dados = await fetchFromDatabase();
-  return { props: { dados } };
 }
