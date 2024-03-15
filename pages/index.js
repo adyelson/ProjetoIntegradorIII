@@ -78,9 +78,6 @@ export default function Home() {
         </label>
       </div>
       <button onClick={handleSubmit}>Iniciar Prova</button>
-      <p>
-        <Link href="/questionario">Ir para o Questionário</Link>
-      </p>
     </div>
   );
 }
