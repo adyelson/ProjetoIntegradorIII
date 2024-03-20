@@ -1,4 +1,5 @@
 import { Pool } from "pg";
+import { useRouter } from "next/router";
 
 const pool = new Pool({
   host: process.env.POSTGRES_HOST,
@@ -8,27 +9,32 @@ const pool = new Pool({
   password: process.env.POSTGRES_PASSWORD,
   ssl: getSSLValues(),
 });
+
 function getSSLValues() {
   if (process.env.POSTGRES_CA) {
     return {
       ca: process.env.POSTGRES_CA,
     };
   }
-
   return process.env.NODE_ENV === "development" ? false : true;
 }
-async function fetchFromDatabase() {
-  const res = await pool.query("SELECT * FROM perguntas");
+
+async function fetchFromDatabase(materias) {
+  const query = "SELECT * FROM perguntas WHERE materia = ANY($1::text[])";
+  const values = [materias];
+  const res = await pool.query(query, values);
   return res.rows;
 }
 
-// export default function MinhaPagina({ dados }) {
-//   // Renderize seus dados aqui
-//   return <div>{JSON.stringify(dados)}</div>;
-// }
 export default function MinhaPagina({ dados }) {
+  const router = useRouter();
+  const { subjects } = router.query;
+
   return (
     <div>
+      <div>
+        <h1>ID da página: {subjects}</h1>
+      </div>
       {dados.map((questao) => (
         <div key={questao.id}>
           <h2>{questao.enunciado}</h2>
@@ -41,7 +47,9 @@ export default function MinhaPagina({ dados }) {
   );
 }
 
-export async function getServerSideProps() {
-  const dados = await fetchFromDatabase();
+export async function getServerSideProps(context) {
+  const { subjects } = context.query;
+  const materias = subjects.split(","); // Transforma a string separada por vírgula em um array
+  const dados = await fetchFromDatabase(materias);
   return { props: { dados } };
 }
