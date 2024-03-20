@@ -1,10 +1,28 @@
+import { Pool } from "pg";
 import { useRouter } from "next/router";
-import database from "infra/database.js";
+
+const pool = new Pool({
+  host: process.env.POSTGRES_HOST,
+  port: process.env.POSTGRES_PORT,
+  user: process.env.POSTGRES_USER,
+  database: process.env.POSTGRES_DB,
+  password: process.env.POSTGRES_PASSWORD,
+  ssl: getSSLValues(),
+});
+
+function getSSLValues() {
+  if (process.env.POSTGRES_CA) {
+    return {
+      ca: process.env.POSTGRES_CA,
+    };
+  }
+  return process.env.NODE_ENV === "development" ? false : true;
+}
 
 async function fetchFromDatabase(materias) {
   const query = "SELECT * FROM perguntas WHERE materia = ANY($1::text[])";
   const values = [materias];
-  const res = await database.query({ text: query, values });
+  const res = await pool.query(query, values);
   return res.rows;
 }
 

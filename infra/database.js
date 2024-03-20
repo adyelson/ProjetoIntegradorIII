@@ -1,24 +1,27 @@
-import { Client } from "pg";
+import { Pool } from "pg";
+
+const pool = new Pool({
+  host: process.env.POSTGRES_HOST,
+  port: process.env.POSTGRES_PORT,
+  user: process.env.POSTGRES_USER,
+  database: process.env.POSTGRES_DB,
+  password: process.env.POSTGRES_PASSWORD,
+  ssl: getSSLValues(),
+});
 
 async function query(queryObject) {
-  const client = new Client({
-    host: process.env.POSTGRES_HOST,
-    port: process.env.POSTGRES_PORT,
-    user: process.env.POSTGRES_USER,
-    database: process.env.POSTGRES_DB,
-    password: process.env.POSTGRES_PASSWORD,
-    ssl: getSSLValues(),
-  });
-
+  let client;
   try {
-    await client.connect();
+    client = await pool.connect();
     const result = await client.query(queryObject);
-    return result; //rever a posição
+    return result;
   } catch (error) {
     console.error(error);
     throw error;
   } finally {
-    await client.end();
+    if (client) {
+      client.release(); // Liberar a conexão de volta para o pool
+    }
   }
 }
 
