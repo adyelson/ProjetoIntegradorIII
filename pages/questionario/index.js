@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react"; // Importe também o useEffect aqui
 import { useRouter } from "next/router";
 import database from "infra/database.js";
 
@@ -15,6 +15,26 @@ export default function MinhaPagina({ dados }) {
   const [respostas, setRespostas] = useState({}); // Estado para armazenar as respostas dos alunos
   const [provaFinalizada, setProvaFinalizada] = useState(false); // Estado para verificar se a prova foi finalizada
   const [pontuacao, setPontuacao] = useState(0); // Estado para armazenar a pontuação do aluno
+  const [alternativasEmbaralhadas, setAlternativasEmbaralhadas] = useState([]); // Estado para armazenar as alternativas embaralhadas
+
+  // Função para embaralhar as alternativas quando necessário
+  const embaralharAlternativas = () => {
+    dados.forEach((questao) => {
+      const alternativas = questao.outras_alternativas.concat(questao.resposta);
+      const alternativasEmbaralhadas = alternativas.sort(
+        () => Math.random() - 0.5,
+      );
+      setAlternativasEmbaralhadas((prevAlternativas) => ({
+        ...prevAlternativas,
+        [questao.id]: alternativasEmbaralhadas,
+      }));
+    });
+  };
+
+  // Chamada da função para embaralhar as alternativas ao montar o componente
+  useEffect(() => {
+    embaralharAlternativas();
+  }, [dados]);
 
   const handleResposta = (id, resposta) => {
     setRespostas({ ...respostas, [id]: resposta });
@@ -41,32 +61,21 @@ export default function MinhaPagina({ dados }) {
         <div key={questao.id}>
           <h2>{questao.enunciado}</h2>
           <ul>
-            {questao.outras_alternativas.map((alt, index) => (
-              <li key={index}>
-                <input
-                  type="radio"
-                  id={`questao${questao.id}-alt${index}`}
-                  name={`questao${questao.id}`}
-                  value={alt}
-                  onChange={() => handleResposta(questao.id, alt)}
-                />
-                <label htmlFor={`questao${questao.id}-alt${index}`}>
-                  {alt}
-                </label>
-              </li>
-            ))}
-            <li>
-              <input
-                type="radio"
-                id={`questao${questao.id}-resposta`}
-                name={`questao${questao.id}`}
-                value={questao.resposta}
-                onChange={() => handleResposta(questao.id, questao.resposta)}
-              />
-              <label htmlFor={`questao${questao.id}-resposta`}>
-                {questao.resposta}
-              </label>
-            </li>
+            {alternativasEmbaralhadas[questao.id] &&
+              alternativasEmbaralhadas[questao.id].map((alt, index) => (
+                <li key={index}>
+                  <input
+                    type="radio"
+                    id={`questao${questao.id}-alt${index}`}
+                    name={`questao${questao.id}`}
+                    value={alt}
+                    onChange={() => handleResposta(questao.id, alt)}
+                  />
+                  <label htmlFor={`questao${questao.id}-alt${index}`}>
+                    {alt}
+                  </label>
+                </li>
+              ))}
           </ul>
         </div>
       ))}
@@ -86,6 +95,5 @@ export async function getServerSideProps(context) {
   const { subjects } = context.query;
   const materias = subjects.split(","); // Transforma a string separada por vírgula em um array
   const dados = await fetchFromDatabase(materias);
-  console.log(dados);
   return { props: { dados } };
 }
