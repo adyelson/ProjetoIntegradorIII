@@ -15,7 +15,7 @@ export default function MinhaPagina({ dados }) {
   return (
     <div>
       <div>
-        <h1>ID da página: {subjects}</h1>
+        <h1>Matérias: {subjects}</h1>
       </div>
       {dados.map((questao) => (
         <div key={questao.id}>
