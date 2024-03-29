@@ -65,33 +65,56 @@ export default function Home() {
   };
 
   return (
-    <div>
-      <h1>Selecione as Matérias e a Quantidade de Questões</h1>
+    <div
+      style={{
+        textAlign: "center",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        alignContent: "center",
+        justifyContent: "center", // Alinha o conteúdo verticalmente
+      }}
+    >
+      <h1
+        style={{
+          margin: "0px",
+          backgroundColor: "darkred",
+          width: "100%",
+          color: "white",
+          padding: "20px",
+          marginBottom: "20px",
+        }}
+      >
+        Sistema de provas para vestibular
+      </h1>
       <div>
-        <h2>Escolha suas matérias:</h2>
+        <h2 style={{ color: "black", marginBottom: "20px" }}>
+          Selecione as Matérias e a Quantidade de Questões
+        </h2>
         {subjects.map((subject) => (
-          <label key={subject}>
-            <input
-              type="checkbox"
-              checked={selectedSubjects.includes(subject)}
-              onChange={() => handleSubjectChange(subject)}
-            />
-            {subject}
-          </label>
+          <span style={{ margin: "5px" }} key={subject}>
+            <label>
+              <input
+                type="checkbox"
+                checked={selectedSubjects.includes(subject)}
+                onChange={() => handleSubjectChange(subject)}
+              />
+              {subject}
+            </label>
+          </span>
         ))}
         <div>
-          <h3>Matérias selecionadas:</h3>
-          <ul>
-            {selectedSubjects
-              .filter((subject) => subject !== "Todas")
-              .map((subject) => (
-                <li key={subject}>{subject}</li>
-              ))}
-          </ul>
+          <h3 style={{ color: "white" }}>Matérias selecionadas:</h3>
+          {selectedSubjects
+            .filter((subject) => subject !== "Todas")
+            .map((subject) => (
+              <span key={subject}>{subject} - </span>
+            ))}
         </div>
       </div>
+      <br></br>
       <div>
-        <label>
+        <label style={{ color: "black" }}>
           Quantidade de Questões:
           <input
             type="number"
@@ -100,7 +123,21 @@ export default function Home() {
           />
         </label>
       </div>
-      <button onClick={handleSubmit}>Iniciar Prova</button>
+      <br></br>
+      <button
+        style={{
+          backgroundColor: "darkred",
+          color: "white",
+          borderRadius: "10px", // Adicionando bordas arredondadas
+          padding: "10px 20px", // Adicionando preenchimento interno
+          fontSize: "16px", // Tamanho da fonte
+          cursor: "pointer", // Alterando o cursor ao passar o mouse
+          border: "none", // Removendo a borda padrão
+        }}
+        onClick={handleSubmit}
+      >
+        Iniciar Prova
+      </button>
     </div>
   );
 }
