@@ -8,6 +8,16 @@ export default function NovaPergunta() {
   const [resposta, setResposta] = useState("");
   const [outrasAlternativas, setOutrasAlternativas] = useState([]);
   const [materia, setMateria] = useState("");
+  const [materiasOptions] = useState([
+    "Física",
+    "Biologia",
+    "Química",
+    "Inglês",
+    "Matemática",
+    "Português",
+    "História",
+    "Geografia",
+  ]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -138,13 +148,19 @@ export default function NovaPergunta() {
         <br />
         <label>
           Matéria:<br></br>
-          <input
+          <select
             style={{ minWidth: "300px" }}
-            type="text"
             value={materia}
             onChange={(e) => setMateria(e.target.value)}
             required
-          />
+          >
+            <option value="">Selecione uma matéria</option>
+            {materiasOptions.map((materiaOption) => (
+              <option key={materiaOption} value={materiaOption}>
+                {materiaOption}
+              </option>
+            ))}
+          </select>
         </label>
         <br />
         <br></br>
