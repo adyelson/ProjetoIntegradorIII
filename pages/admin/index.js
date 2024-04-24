@@ -59,18 +59,26 @@ export default function MinhaPagina({ perguntas }) {
         <h1 style={{ textAlign: "center" }}>
           Sistema de provas para vestibular
         </h1>
+        <div
+          style={{
+            width: "200px",
+            marginTop: "10px",
+            textAlign: "center",
+            backgroundColor: "lightgray",
+            borderRadius: "5px",
+          }}
+        >
+          <Link href="/novapergunta">Criar Nova Pergunta</Link>
+        </div>
       </div>
-      <Link href="/novapergunta">Criar Nova Pergunta</Link>
       {/* Tabela de perguntas existentes */}
       <table>
-        <thead>
+        <thead style={{ backgroundColor: "black", color: "white" }}>
           <tr>
             <th>Id</th>
             <th>Enunciado</th>
-            <th>Alternativa</th>
-            <th>Alternativa</th>
-            <th>Alternativa</th>
-            <th>Resposta</th>
+            <th>Alternativas</th>
+
             <th>Matéria</th>
             <th>Ações</th>
           </tr>
@@ -91,12 +99,20 @@ export default function MinhaPagina({ perguntas }) {
               <td key={`enunciado-${questao.id}`} style={{ padding: "10px" }}>
                 {questao.enunciado}
               </td>
-              {questao.outras_alternativas.map((alternativa, altIndex) => (
-                <td key={`alt-${questao.id}-${altIndex}`}>{alternativa}</td>
-              ))}
-              <td key={`resposta-${questao.id}`}>{questao.resposta}</td>
-              <td key={`materia-${questao.id}`}>{questao.materia}</td>
-              <td key={`acoes-${questao.id}`}>
+              <td style={{ padding: "5px" }}>
+                {questao.outras_alternativas.map((alternativa, altIndex) => (
+                  <p key={`alt-${questao.id}-${altIndex}`}>
+                    {altIndex + 1 + ": " + alternativa}
+                  </p>
+                ))}
+                <p key={`resposta-${questao.id}`}>
+                  {"Resp: " + questao.resposta}
+                </p>
+              </td>
+              <td key={`materia-${questao.id}`} style={{ padding: "5px" }}>
+                {questao.materia}
+              </td>
+              <td key={`acoes-${questao.id}`} style={{ padding: "5px" }}>
                 <Link href={`/novapergunta?id=${questao.id}`}>Editar</Link>
                 <br></br>
                 {/* Adicione o evento de clique para chamar a função de exclusão */}

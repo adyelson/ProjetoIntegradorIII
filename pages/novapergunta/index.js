@@ -33,6 +33,16 @@ export default function NovaPergunta() {
     fetchData();
   }, [id]);
 
+  const resetForm = () => {
+    setEnunciado("");
+    setResposta("");
+    setOutrasAlternativas([]);
+    setMateria("");
+  };
+  const handleVoltar = () => {
+    router.push("/admin");
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     const data = { id, enunciado, resposta, outrasAlternativas, materia };
@@ -50,7 +60,12 @@ export default function NovaPergunta() {
         const result = await res.json();
         console.log("Pergunta criada/atualizada:", result);
         // Redirecionar para página de sucesso, por exemplo
-        router.push("/admin");
+        if (!id) {
+          router.push("/novapergunta");
+          resetForm(); // Limpa os inputs após o envio do formulário
+        } else {
+          router.push("/admin");
+        }
       } else {
         console.error("Erro ao criar/atualizar pergunta:", res.statusText);
       }
@@ -60,41 +75,71 @@ export default function NovaPergunta() {
   };
 
   return (
-    <div>
+    <div
+      style={{
+        margin: "0px", // Centraliza o conteúdo horizontalmente
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        marginBottom: "30px",
+      }}
+    >
+      <div
+        style={{
+          margin: "0px",
+          backgroundColor: "darkred",
+          width: "100%",
+          color: "white",
+          padding: "20px",
+          marginBottom: "20px",
+        }}
+      >
+        <h1 style={{ textAlign: "center" }}>
+          Sistema de provas para vestibular
+        </h1>
+      </div>
       <h1>{id ? "Editar Pergunta" : "Criar Nova Pergunta"}</h1>
+      <br></br>
       <form onSubmit={handleSubmit}>
         <label>
-          Enunciado:
-          <input
+          Enunciado:<br></br>
+          <textarea
+            style={{ minWidth: "300px" }}
             type="text"
             value={enunciado}
             onChange={(e) => setEnunciado(e.target.value)}
+            rows={4} // Defina o número de linhas desejado
             required
           />
         </label>
         <br />
         <label>
-          Resposta:
-          <input
+          Resposta:<br></br>
+          <textarea
+            style={{ minWidth: "300px" }}
             type="text"
             value={resposta}
             onChange={(e) => setResposta(e.target.value)}
+            rows={4} // Defina o número de linhas desejado
             required
           />
         </label>
         <br />
         <label>
-          Outras Alternativas (separadas por vírgula):
-          <input
-            type="text"
+          Outras Alternativas (separadas por vírgula):<br></br>
+          <textarea
             value={outrasAlternativas.join(",")}
             onChange={(e) => setOutrasAlternativas(e.target.value.split(","))}
+            rows={7} // Defina o número de linhas desejado
+            style={{ minWidth: "300px" }} // Defina o mínimo de largura desejado
+            required
           />
         </label>
         <br />
         <label>
-          Matéria:
+          Matéria:<br></br>
           <input
+            style={{ minWidth: "300px" }}
             type="text"
             value={materia}
             onChange={(e) => setMateria(e.target.value)}
@@ -102,8 +147,19 @@ export default function NovaPergunta() {
           />
         </label>
         <br />
-        <button type="submit">{id ? "Editar" : "Criar"}</button>
+        <br></br>
+        <button style={{ height: "30px", minWidth: "300px" }} type="submit">
+          {id ? "Editar" : "Criar"}
+        </button>
       </form>
+
+      <button
+        style={{ marginTop: "10px", minWidth: "300px" }}
+        type="button"
+        onClick={handleVoltar}
+      >
+        {"Voltar"}
+      </button>
     </div>
   );
 }
