@@ -11,8 +11,4 @@ exports.up = async (pgm) => {
   `);
 };
 
-exports.down = async (pgm) => {
-  await pgm.sql(`
-    DELETE * FROM perguntas;
-  `);
-};
+exports.down = async (pgm) => {};
