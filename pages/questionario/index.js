@@ -60,7 +60,7 @@ export default function MinhaPagina({ dados }) {
     // Lógica para exibir a pontuação ou processar as respostas de outra forma
   };
 
-  const letrasAlternativas = ["A", "B", "C", "D"]; // Array de letras para as alternativas
+  const letrasAlternativas = ["A", "B", "C", "D", "E"]; // Array de letras para as alternativas
 
   return (
     <div
