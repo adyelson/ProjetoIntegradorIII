@@ -136,10 +136,10 @@ export default function NovaPergunta() {
         </label>
         <br />
         <label>
-          Outras Alternativas (separadas por vírgula):<br></br>
+          Outras Alternativas, somente as erradas (separadas por ///):<br></br>
           <textarea
             value={outrasAlternativas.join(",")}
-            onChange={(e) => setOutrasAlternativas(e.target.value.split(","))}
+            onChange={(e) => setOutrasAlternativas(e.target.value.split("///"))}
             rows={7} // Defina o número de linhas desejado
             style={{ minWidth: "300px" }} // Defina o mínimo de largura desejado
             required
