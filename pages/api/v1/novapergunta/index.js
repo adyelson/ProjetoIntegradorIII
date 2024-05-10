@@ -5,7 +5,7 @@ export default async function handler(req, res) {
     // Criação de nova pergunta
     try {
       const { enunciado, resposta, outrasAlternativas, materia } = req.body;
-      const outrasAlternativasTrimmed = outrasAlternativas.slice(0, 3);
+      const outrasAlternativasTrimmed = outrasAlternativas.slice(0, 4);
       // Valide os dados recebidos aqui, se necessário
 
       const queryObject = {
@@ -28,7 +28,7 @@ export default async function handler(req, res) {
     // Atualização de pergunta existente
     try {
       const { id, enunciado, resposta, outrasAlternativas, materia } = req.body;
-      const outrasAlternativasTrimmed = outrasAlternativas.slice(0, 3);
+      const outrasAlternativasTrimmed = outrasAlternativas.slice(0, 4);
       // Valide os dados recebidos aqui, se necessário
 
       const queryObject = {
