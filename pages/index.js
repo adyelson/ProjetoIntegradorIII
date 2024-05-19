@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 
 export default function Home() {
   const [questionCount, setQuestionCount] = useState(10);
   const [selectedSubjects, setSelectedSubjects] = useState([]);
+  const [randomNewsArticle, setRandomNewsArticle] = useState(null);
   const subjects = [
     "Todas",
     "Física",
@@ -60,6 +61,24 @@ export default function Home() {
     });
   };
 
+  useEffect(() => {
+    const fetchNews = async () => {
+      const url = `/api/news`;
+      try {
+        const response = await fetch(url);
+        const data = await response.json();
+        if (data.articles && data.articles.length > 0) {
+          const randomIndex = Math.floor(Math.random() * data.articles.length);
+          setRandomNewsArticle(data.articles[randomIndex]);
+        }
+      } catch (error) {
+        console.error("Erro ao buscar notícias:", error);
+      }
+    };
+
+    fetchNews();
+  }, []);
+
   return (
     <div
       style={{
@@ -109,7 +128,7 @@ export default function Home() {
             ))}
         </div>
       </div>
-      <br></br>
+
       <div>
         <label htmlFor="input-question-count" style={{ color: "black" }}>
           Quantidade de Questões:
@@ -140,6 +159,39 @@ export default function Home() {
       >
         Iniciar Prova
       </button>
+
+      <br></br>
+      <center
+        style={{
+          backgroundColor: "lightgray",
+          width: "100%",
+          height: "100%",
+          padding: "30px",
+        }}
+      >
+        <h2 style={{ color: "black", marginBottom: "20px" }}>Notícias</h2>
+        {randomNewsArticle ? (
+          <div style={{ maxWidth: "660px" }}>
+            <h3>{randomNewsArticle.title}</h3>
+            <img
+              src={randomNewsArticle.urlToImage}
+              alt={randomNewsArticle.title}
+              style={{ maxWidth: "250px" }}
+            />
+            <p>{randomNewsArticle.description}</p>
+            <a
+              href={randomNewsArticle.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ color: "blue", textDecoration: "underline" }}
+            >
+              Leia mais
+            </a>
+          </div>
+        ) : (
+          <p style={{ color: "black" }}>Carregando notícia...</p>
+        )}
+      </center>
     </div>
   );
 }
