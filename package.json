@@ -16,7 +16,7 @@
     "migration:up": "node-pg-migrate --migrations-dir infra/migrations --envPath .env.development up",
     "migration:down": "node-pg-migrate --migrations-dir infra/migrations --envPath .env.development down"
   },
-  "author": "",
+  "author": "PI3",
   "license": "MIT",
   "dependencies": {
     "dotenv": "^16.4.4",
