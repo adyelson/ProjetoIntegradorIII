@@ -105,13 +105,14 @@ export default function MinhaPagina({ dados }) {
             {timer % 60 < 10 ? `0${timer % 60}` : timer % 60}
           </p>
         </header>
+
         {dados.map((questao, index) => (
           <section
             style={{ width: "100%", maxWidth: "600px" }}
             key={questao.id}
           >
-            <h2>
-              {index + 1}. {questao.enunciado}
+            <h2 tabIndex={0}>
+              Pergunta {index + 1}: {questao.enunciado}
             </h2>
             {alternativasEmbaralhadas[questao.id] &&
               alternativasEmbaralhadas[questao.id].map((alt, altIndex) => {
@@ -120,6 +121,20 @@ export default function MinhaPagina({ dados }) {
                   provaFinalizada &&
                   alt === respostas[questao.id] &&
                   alt !== questao.resposta;
+                const isMarked = respostas[questao.id] === alt;
+
+                let ariaLabel = letrasAlternativas[altIndex] + ": " + alt;
+                if (isMarked) {
+                  ariaLabel += " (alternativa marcada)";
+                } else {
+                  ariaLabel += " (alternativa não marcada)";
+                }
+                if (isIncorrect && provaFinalizada) {
+                  ariaLabel += " (alternativa errada)";
+                }
+                if (isCorrect && provaFinalizada) {
+                  ariaLabel += " (alternativa certa)";
+                }
                 return (
                   <div
                     key={altIndex}
@@ -133,9 +148,16 @@ export default function MinhaPagina({ dados }) {
                       onChange={() => handleResposta(questao.id, alt)}
                       disabled={provaFinalizada}
                       style={{ display: "none" }}
+                      aria-checked={isMarked}
                     />
                     <label
                       htmlFor={`questao${questao.id}-alt${altIndex}`}
+                      tabIndex={0}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" && !provaFinalizada) {
+                          handleResposta(questao.id, alt);
+                        }
+                      }}
                       style={{
                         display: "flex",
                         alignItems: "center",
@@ -150,11 +172,12 @@ export default function MinhaPagina({ dados }) {
                           ? "green"
                           : isIncorrect
                           ? "red"
-                          : respostas[questao.id] === alt
+                          : isMarked
                           ? "gray"
                           : "white",
                         color: isCorrect || isIncorrect ? "white" : "black",
                       }}
+                      aria-label={ariaLabel}
                     >
                       {letrasAlternativas[altIndex]}: {alt}
                     </label>
@@ -177,14 +200,20 @@ export default function MinhaPagina({ dados }) {
             }}
             onClick={finalizarProva}
             aria-label="Finalizar Prova"
+            tabIndex={provaFinalizada ? -1 : 0}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && !provaFinalizada) {
+                finalizarProva();
+              }
+            }}
           >
             Finalizar Prova
           </button>
         )}
         {provaFinalizada && (
-          <section>
+          <section tabIndex={0}>
             <br />
-            <h2>Pontuação: {pontuacao}</h2>
+            <h2>{pontuacao} acertos.</h2>
             {Object.keys(errosPorMateria).length > 0 && (
               <div>
                 <br />
@@ -192,7 +221,7 @@ export default function MinhaPagina({ dados }) {
                 <ul>
                   {Object.entries(errosPorMateria).map(([materia, erros]) => (
                     <li key={materia}>
-                      {materia}: {erros} erro(s)
+                      {erros} em {materia}.
                     </li>
                   ))}
                 </ul>
@@ -204,6 +233,7 @@ export default function MinhaPagina({ dados }) {
               {tempoFinalizacao % 60 < 10
                 ? `0${tempoFinalizacao % 60}`
                 : tempoFinalizacao % 60}
+              .
             </h2>
           </section>
         )}

@@ -102,7 +102,7 @@ export default function Home() {
       >
         Sistema de provas para vestibular
       </h1>
-      <div>
+      <div tabIndex={0}>
         <h2 style={{ color: "black", marginBottom: "20px" }}>
           Selecione as Matérias e a Quantidade de Questões
         </h2>
@@ -162,6 +162,9 @@ export default function Home() {
 
       <br></br>
       <center
+        tabIndex={0}
+        role="region"
+        aria-label="Notícias importantes"
         style={{
           backgroundColor: "lightgray",
           width: "100%",
@@ -172,13 +175,13 @@ export default function Home() {
         <h2 style={{ color: "black", marginBottom: "20px" }}>Notícias</h2>
         {randomNewsArticle ? (
           <div style={{ maxWidth: "660px" }}>
-            <h3>{randomNewsArticle.title}</h3>
+            <h3 tabIndex={0}>{randomNewsArticle.title}</h3>
             <img
               src={randomNewsArticle.urlToImage}
               alt={randomNewsArticle.title}
               style={{ maxWidth: "250px" }}
             />
-            <p>{randomNewsArticle.description}</p>
+            <p tabIndex={0}>{randomNewsArticle.description}</p>
             <a
               href={randomNewsArticle.url}
               target="_blank"
