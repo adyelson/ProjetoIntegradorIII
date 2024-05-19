@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useRouter } from "next/router"; // Importando o hook useRouter para acessar o roteador
+import { useRouter } from "next/router";
 
 export default function Home() {
   const [questionCount, setQuestionCount] = useState(10);
@@ -16,7 +16,7 @@ export default function Home() {
     "Geografia",
   ];
 
-  const router = useRouter(); // Obtendo o objeto de roteamento
+  const router = useRouter();
 
   const handleSubjectChange = (subject) => {
     if (subject === "Todas") {
@@ -49,17 +49,13 @@ export default function Home() {
   };
 
   const handleSubmit = () => {
-    // Aqui você pode enviar os dados para a rota /questionario/index.js
     console.log("Matérias selecionadas:", selectedSubjects);
     console.log("Quantidade de questões:", questionCount);
-    // Implemente o envio real dos dados aqui
-
-    // Navegando para a rota /questionario e passando os dados como query params
     router.push({
       pathname: "/questionario",
       query: {
-        subjects: selectedSubjects.join(","), // Convertendo o array de matérias em uma string separada por vírgula
-        questionCount: questionCount.toString(), // Convertendo a quantidade de questões para string
+        subjects: selectedSubjects.join(","),
+        questionCount: questionCount.toString(),
       },
     });
   };
@@ -72,7 +68,7 @@ export default function Home() {
         flexDirection: "column",
         alignItems: "center",
         alignContent: "center",
-        justifyContent: "center", // Alinha o conteúdo verticalmente
+        justifyContent: "center",
       }}
     >
       <h1
@@ -93,9 +89,10 @@ export default function Home() {
         </h2>
         {subjects.map((subject) => (
           <span style={{ margin: "5px" }} key={subject}>
-            <label>
+            <label htmlFor={`checkbox-${subject}`}>
               <input
                 type="checkbox"
+                id={`checkbox-${subject}`}
                 checked={selectedSubjects.includes(subject)}
                 onChange={() => handleSubjectChange(subject)}
               />
@@ -114,12 +111,15 @@ export default function Home() {
       </div>
       <br></br>
       <div>
-        <label style={{ color: "black" }}>
+        <label htmlFor="input-question-count" style={{ color: "black" }}>
           Quantidade de Questões:
           <input
             type="number"
+            id="input-question-count"
             value={questionCount}
             onChange={handleQuestionCountChange}
+            min="1"
+            step="1"
           />
         </label>
       </div>
@@ -128,13 +128,15 @@ export default function Home() {
         style={{
           backgroundColor: "darkred",
           color: "white",
-          borderRadius: "10px", // Adicionando bordas arredondadas
-          padding: "10px 20px", // Adicionando preenchimento interno
-          fontSize: "16px", // Tamanho da fonte
-          cursor: "pointer", // Alterando o cursor ao passar o mouse
-          border: "none", // Removendo a borda padrão
+          borderRadius: "10px",
+          padding: "10px 20px",
+          fontSize: "16px",
+          cursor: "pointer",
+          border: "none",
         }}
         onClick={handleSubmit}
+        onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
+        tabIndex="0"
       >
         Iniciar Prova
       </button>

@@ -1,25 +1,40 @@
-import { useState, useEffect } from "react"; // Importe também o useEffect aqui
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/router";
 import database from "infra/database.js";
 
-async function fetchFromDatabase(materias) {
-  const query = "SELECT * FROM perguntas WHERE materia = ANY($1::text[])";
-  const values = [materias];
+async function fetchFromDatabase(materias, questionCount) {
+  const query = `
+    SELECT * FROM perguntas 
+    WHERE materia = ANY($1::text[]) 
+    ORDER BY random() 
+    LIMIT $2`;
+  const values = [materias, questionCount];
   const res = await database.query({ text: query, values });
   return res.rows;
 }
 
 export default function MinhaPagina({ dados }) {
   const router = useRouter();
-  const { subjects } = router.query;
-  const [respostas, setRespostas] = useState({}); // Estado para armazenar as respostas dos alunos
-  const [provaFinalizada, setProvaFinalizada] = useState(false); // Estado para verificar se a prova foi finalizada
-  const [pontuacao, setPontuacao] = useState(0); // Estado para armazenar a pontuação do aluno
-  const [alternativasEmbaralhadas, setAlternativasEmbaralhadas] = useState([]); // Estado para armazenar as alternativas embaralhadas
-  const [timer, setTimer] = useState(0); // Inicializando o timer com 30 minutos (em segundos)
-  const [currentQuestion, setCurrentQuestion] = useState(0); // Estado para controlar a pergunta atual
+  const { subjects, questionCount } = router.query;
+  const [respostas, setRespostas] = useState({});
+  const [provaFinalizada, setProvaFinalizada] = useState(false);
+  const [pontuacao, setPontuacao] = useState(0);
+  const [alternativasEmbaralhadas, setAlternativasEmbaralhadas] = useState([]);
+  const [timer, setTimer] = useState(0);
+  const [tempoFinalizacao, setTempoFinalizacao] = useState(0);
+  const [errosPorMateria, setErrosPorMateria] = useState({});
+  const timerRef = useRef(null);
 
-  // Função para embaralhar as alternativas quando necessário
+  useEffect(() => {
+    embaralharAlternativas();
+
+    timerRef.current = setInterval(() => {
+      setTimer((prevTimer) => prevTimer + 1);
+    }, 1000);
+
+    return () => clearInterval(timerRef.current);
+  }, [dados]);
+
   const embaralharAlternativas = () => {
     dados.forEach((questao) => {
       const alternativas = questao.outras_alternativas.concat(questao.resposta);
@@ -33,17 +48,6 @@ export default function MinhaPagina({ dados }) {
     });
   };
 
-  // Chamada da função para embaralhar as alternativas ao montar o componente
-  useEffect(() => {
-    embaralharAlternativas();
-
-    const interval = setInterval(() => {
-      setTimer((prevTimer) => prevTimer + 1);
-    }, 1000);
-
-    return () => clearInterval(interval);
-  }, [dados]);
-
   const handleResposta = (id, resposta) => {
     setRespostas({ ...respostas, [id]: resposta });
   };
@@ -51,115 +55,167 @@ export default function MinhaPagina({ dados }) {
   const finalizarProva = () => {
     setProvaFinalizada(true);
     let pontuacaoAtual = 0;
+    let errosPorMateriaAtual = {};
+
     dados.forEach((questao) => {
-      if (respostas[questao.id] === questao.resposta) {
+      const respostaCorreta = respostas[questao.id] === questao.resposta;
+      if (respostaCorreta) {
         pontuacaoAtual++;
+      } else {
+        const materia = questao.materia;
+        errosPorMateriaAtual[materia] =
+          (errosPorMateriaAtual[materia] || 0) + 1;
       }
     });
+
     setPontuacao(pontuacaoAtual);
-    // Lógica para exibir a pontuação ou processar as respostas de outra forma
+    setErrosPorMateria(errosPorMateriaAtual);
+    clearInterval(timerRef.current);
+    setTempoFinalizacao(timer);
   };
 
-  const letrasAlternativas = ["A", "B", "C", "D", "E"]; // Array de letras para as alternativas
+  const letrasAlternativas = ["A", "B", "C", "D", "E"];
 
   return (
-    <div
-      style={{
-        margin: "0px", // Centraliza o conteúdo horizontalmente
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        marginBottom: "30px",
-      }}
-    >
+    <main>
       <div
         style={{
           margin: "0px",
-          backgroundColor: "darkred",
-          width: "100%",
-          color: "white",
-          padding: "20px",
-          marginBottom: "20px",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          marginBottom: "30px",
         }}
       >
-        <h1 style={{ textAlign: "center" }}>
-          Sistema de provas para vestibular
-        </h1>
-        <p style={{ textAlign: "center", marginTop: "10px" }}>
-          Tempo decorrido: {Math.floor(timer / 60)}:
-          {timer % 60 < 10 ? `0${timer % 60}` : timer % 60}
-        </p>
-      </div>
-      {dados.map((questao, index) => (
-        <div style={{ width: "100%", maxWidth: "600px" }} key={questao.id}>
-          <h2 style={{ padding: "10px" }}>
-            {index + 1}. {questao.enunciado}
-          </h2>
-          {alternativasEmbaralhadas[questao.id] &&
-            alternativasEmbaralhadas[questao.id].map((alt, altIndex) => (
-              <div
-                key={altIndex}
-                style={{ marginBottom: "10px", display: "flex" }}
-              >
-                <input
-                  type="radio"
-                  id={`questao${questao.id}-alt${altIndex}`}
-                  name={`questao${questao.id}`}
-                  value={alt}
-                  onChange={() => handleResposta(questao.id, alt)}
-                  style={{ display: "none" }} // Oculta o input
-                />
-                <label
-                  htmlFor={`questao${questao.id}-alt${altIndex}`}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    minHeight: "40px",
-                    width: "100%",
-                    padding: "5px 10px",
-                    margin: "5px",
-                    border: "1px solid black",
-                    borderRadius: "5px",
-                    cursor: "pointer",
-                    backgroundColor:
-                      respostas[questao.id] === alt ? "gray" : "white",
-                  }}
-                >
-                  {letrasAlternativas[altIndex]}: {alt}
-                </label>
-              </div>
-            ))}
-        </div>
-      ))}
-      {!provaFinalizada && (
-        <button
+        <header
           style={{
-            marginTop: "30px",
+            margin: "0px",
             backgroundColor: "darkred",
+            width: "100%",
             color: "white",
-            borderRadius: "10px", // Adicionando bordas arredondadas
-            padding: "10px 20px", // Adicionando preenchimento interno
-            fontSize: "16px", // Tamanho da fonte
-            cursor: "pointer", // Alterando o cursor ao passar o mouse
-            border: "none", // Removendo a borda padrão
+            padding: "20px",
+            marginBottom: "20px",
           }}
-          onClick={finalizarProva}
         >
-          Finalizar Prova
-        </button>
-      )}
-      {provaFinalizada && (
-        <div>
-          <h3>Pontuação: {pontuacao}</h3>
-        </div>
-      )}
-    </div>
+          <h1 style={{ textAlign: "center" }}>
+            Sistema de provas para vestibular
+          </h1>
+          <p style={{ textAlign: "center" }}>
+            Tempo decorrido: {Math.floor(timer / 60)}:
+            {timer % 60 < 10 ? `0${timer % 60}` : timer % 60}
+          </p>
+        </header>
+        {dados.map((questao, index) => (
+          <section
+            style={{ width: "100%", maxWidth: "600px" }}
+            key={questao.id}
+          >
+            <h2>
+              {index + 1}. {questao.enunciado}
+            </h2>
+            {alternativasEmbaralhadas[questao.id] &&
+              alternativasEmbaralhadas[questao.id].map((alt, altIndex) => {
+                const isCorrect = provaFinalizada && alt === questao.resposta;
+                const isIncorrect =
+                  provaFinalizada &&
+                  alt === respostas[questao.id] &&
+                  alt !== questao.resposta;
+                return (
+                  <div
+                    key={altIndex}
+                    style={{ marginBottom: "10px", display: "flex" }}
+                  >
+                    <input
+                      type="radio"
+                      id={`questao${questao.id}-alt${altIndex}`}
+                      name={`questao${questao.id}`}
+                      value={alt}
+                      onChange={() => handleResposta(questao.id, alt)}
+                      disabled={provaFinalizada}
+                      style={{ display: "none" }}
+                    />
+                    <label
+                      htmlFor={`questao${questao.id}-alt${altIndex}`}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        minHeight: "40px",
+                        width: "100%",
+                        padding: "5px 10px",
+                        margin: "5px",
+                        border: "1px solid black",
+                        borderRadius: "5px",
+                        cursor: "pointer",
+                        backgroundColor: isCorrect
+                          ? "green"
+                          : isIncorrect
+                          ? "red"
+                          : respostas[questao.id] === alt
+                          ? "gray"
+                          : "white",
+                        color: isCorrect || isIncorrect ? "white" : "black",
+                      }}
+                    >
+                      {letrasAlternativas[altIndex]}: {alt}
+                    </label>
+                  </div>
+                );
+              })}
+          </section>
+        ))}
+        {!provaFinalizada && (
+          <button
+            style={{
+              marginTop: "30px",
+              backgroundColor: "darkred",
+              color: "white",
+              borderRadius: "10px",
+              padding: "10px 20px",
+              fontSize: "16px",
+              cursor: "pointer",
+              border: "none",
+            }}
+            onClick={finalizarProva}
+            aria-label="Finalizar Prova"
+          >
+            Finalizar Prova
+          </button>
+        )}
+        {provaFinalizada && (
+          <section>
+            <br />
+            <h2>Pontuação: {pontuacao}</h2>
+            {Object.keys(errosPorMateria).length > 0 && (
+              <div>
+                <br />
+                <h2>Erros por Matéria:</h2>
+                <ul>
+                  {Object.entries(errosPorMateria).map(([materia, erros]) => (
+                    <li key={materia}>
+                      {materia}: {erros} erro(s)
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            <br />
+            <h2>
+              Tempo utilizado: {Math.floor(tempoFinalizacao / 60)}:
+              {tempoFinalizacao % 60 < 10
+                ? `0${tempoFinalizacao % 60}`
+                : tempoFinalizacao % 60}
+            </h2>
+          </section>
+        )}
+      </div>
+    </main>
   );
 }
 
 export async function getServerSideProps(context) {
-  const { subjects } = context.query;
-  const materias = subjects.split(","); // Transforma a string separada por vírgula em um array
-  const dados = await fetchFromDatabase(materias);
+  const { subjects, questionCount } = context.query;
+  const materias = subjects.split(",");
+  const count = parseInt(questionCount, 10) || 10;
+  const dados = await fetchFromDatabase(materias, count);
   return { props: { dados } };
 }
